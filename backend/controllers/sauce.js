@@ -5,6 +5,10 @@ exports.createSauce = (req, res, next) => {
   const sauceObject = JSON.parse(req.body.sauce);
   delete sauceObject._id;
   delete sauceObject._userId;
+  sauceObject.likes = 0
+  sauceObject.dislikes = 0
+  sauceObject.usersDisliked = []
+  sauceObject.usersLiked = []
   const sauce = new Sauce({
      ...sauceObject,
      userId: req.auth.userId,
@@ -42,6 +46,7 @@ exports.getOneSauce = (req, res, next) => {
     Sauce.findOne({_id: req.params.id})
         .then((sauce) => {
             if (sauce.userId != req.auth.userId) {
+                console.log("pas possible")
                 res.status(401).json({ message : 'Not authorized'});
             } else {
                 Sauce.updateOne({ _id: req.params.id}, { ...sauceObject, _id: req.params.id})
@@ -78,3 +83,40 @@ exports.getOneSauce = (req, res, next) => {
       .then(sauces => res.status(200).json(sauces))
       .catch(error => res.status(400).json({ error }));
   };
+
+  exports.likeStatusSauce = (req,res,next) => {
+    Sauce.findOne({ _id: req.params.id})
+     .then(sauce => {
+      if (
+        (!sauce.usersLiked.includes(userId)) & 
+        (!sauce.usersDisliked.includes(userId))
+      ) {
+        switch(req.body.like) {
+          case 1: 
+          sauce.usersLiked.push(req.auth.userId)
+          break
+  
+          case -1:
+          sauce.usersDisliked.push(req.auth.userId)
+          break
+      }
+      sauce.likes = sauce.usersLiked.length
+      sauce.dislikes = sauce.usersDisliked.length
+  
+      Sauce.updateOne({ _id: req.params.id}, sauce)
+       .then(() =>  res.status(201).json({ message : "Like status updated! "}))
+       .catch(error => res.status(500).json({ error }))
+     }
+     else if (sauce.usersLiked.includes(userId)) {
+      sauce.usersLiked.splice(sauce.usersLiked.indexOf(userId), 1);
+     }
+     else if (sauce.usersDisliked.includes(userId)){
+      sauce.usersDisliked.splice(sauce.usersDisliked.indexOf(userId), 1);
+     }
+    }
+     )
+     .catch(error => res.status(500).json({ error }))
+      }
+         
+     
+
