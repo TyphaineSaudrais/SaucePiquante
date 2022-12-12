@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
-const helmet = require('helmet');
-
+const helmet = require('helmet')
 const mongoose = require('mongoose');
 mongoose.connect('mongodb+srv://Typh91:secondpass@cluster0.ofotlj8.mongodb.net/?retryWrites=true&w=majority',
   { useNewUrlParser: true,
@@ -27,5 +26,5 @@ app.use('/api/sauces', saucesRoutes);
 app.use('/api/auth', userRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-app.use(helmet());
+app.use(helmet())
 module.exports = app;

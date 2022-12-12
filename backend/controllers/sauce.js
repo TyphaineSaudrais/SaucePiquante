@@ -1,11 +1,10 @@
 const Sauce = require('../models/sauce');
-const User = require('../models/User');
 const fs = require('fs');
 
-
+// CREER UNE SAUCE 
 exports.createSauce = (req, res, next) => {
     const sauceObject = JSON.parse(req.body.sauce);
-    delete sauceObject._id;
+    delete sauceObject._id; 
     delete sauceObject._userId; // On supprime en amont le faux 'userId' envoyer par le frontend.
     const sauce = new Sauce({
         ...sauceObject, // L'opérateur spread '...' permet de faire des copies de tous les éléments de req.body
@@ -25,6 +24,10 @@ exports.createSauce = (req, res, next) => {
     .then(() => { res.status(201).json({message: 'Objet enregistré !'})})
     .catch(error => { res.status(400).json( {message: 'Non enregistré !'})})
 };
+
+
+
+// RECUPERER UNE SAUCE
 exports.getOneSauce = (req, res,next) => {
   // on utilise le modele mangoose et la methode findOne pour trouver un objet via la comparaison req.params.id
   Sauce.findOne({ _id: req.params.id })
@@ -34,19 +37,34 @@ exports.getOneSauce = (req, res,next) => {
   .catch((error) => res.status(404).json({  message: 'Non OK !'}));
   };
 
+
+// MODIFIER UNE SAUCE
 exports.modifySauce = (req, res, next) => {
-  Sauce.findOne({ _id: req.params.id})
-  .then(sauce => {
-     res.status(200).json(sauce);
-     
-  })
-  .catch( error => {
-      res.status(500).json({ message: 'Non trouvé ' });
-  });
-    
-};
+    const sauceObject = req.file ? {
+        ...JSON.parse(req.body.sauce),
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    } : { ...req.body };
+
+    delete sauceObject._userId;
+    Sauce.findOne({_id: req.params.id})
+        .then((sauce) => {
+            if (sauce.userId != req.auth.userId) {
+                console.log("pas possible")
+                res.status(401).json({ message : 'Not authorized'});
+            } else {
+                Sauce.updateOne({ _id: req.params.id}, { ...sauceObject, _id: req.params.id})
+                .then(() => res.status(200).json({message : 'Objet modifié!'}))
+                .catch(error => res.status(401).json({ error }));
+            }
+        })
+        .catch((error) => {
+            res.status(400).json({ error });
+        });
+ };
+  
 
 
+// SUPPRIMER UNE SAUCE 
 exports.deleteSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id })
   .then(sauce => {
@@ -63,6 +81,8 @@ exports.deleteSauce = (req, res, next) => {
   .catch( error => res.status(500).json({ error }))
 };
 
+
+// RECUPERER TOUTES LES SAUCES 
 exports.getAllSauce = (req, res, next) => {
   Sauce.find().then(
     (sauces) => {
@@ -76,7 +96,9 @@ exports.getAllSauce = (req, res, next) => {
     }
   );
 };
-// autre maniere pour faire
+
+
+// LIKE & DISLIKES 
 exports.likeDislike = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id})
   .then(sauce => {
