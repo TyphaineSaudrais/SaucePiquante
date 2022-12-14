@@ -2,7 +2,12 @@ const express = require('express');
 const app = express();
 const helmet = require('helmet')
 const mongoose = require('mongoose');
-mongoose.connect('mongodb+srv://Typh91:secondpass@cluster0.ofotlj8.mongodb.net/?retryWrites=true&w=majority',
+const dotenv = require('dotenv');
+
+
+dotenv.config();
+
+mongoose.connect(process.env.MONGO_URL,
   { useNewUrlParser: true,
     useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
