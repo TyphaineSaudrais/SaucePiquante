@@ -50,7 +50,7 @@ exports.modifySauce = (req, res, next) => {
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     } : { ...req.body };
 
-    delete sauceObject._userId;
+    delete sauceObject._userId;  // On supprime en amont le faux 'userId' envoyer par le frontend.
     // on utilise le modele mangoose et la methode findOne pour trouver l'objet via la comparaison req.params.id
     Sauce.findOne({_id: req.params.id})
         .then((sauce) => {
@@ -129,7 +129,7 @@ exports.likeDislike = (req, res, next) => {
     // DEUX CAS 
     //- case 1 - il n'y a aucun userID correspondant à l'UserID de la req like dans la liste des userID qui ont deja liké
    sauce.usersLiked = sauce.usersLiked.filter(userId => userId != req.auth.userId)   
-   //- case 2 - il n'y a un userID correspondant à l'UserID de la req like dans la liste des userID qui ont deja liké
+   //- case 2 -  il n'y a aucun userID correspondant à l'UserID de la req like dans la liste des userID qui ont deja disliké
    sauce.usersDisliked = sauce.usersDisliked.filter(userId => userId != req.auth.userId)
 
 
