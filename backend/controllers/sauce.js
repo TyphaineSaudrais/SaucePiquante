@@ -6,7 +6,7 @@ const fs = require('fs');
 exports.createSauce = (req, res, next) => {
   // On met le texte de la requete entrée en format JSON
     const sauceObject = JSON.parse(req.body.sauce);
-    delete sauceObject._id; 
+    delete sauceObject._id; // On supprime en amont le faux '_Id' envoyer par le frontend.
     delete sauceObject._userId; // On supprime en amont le faux 'userId' envoyer par le frontend.
     const sauce = new Sauce({
         ...sauceObject, // L'opérateur spread '...' permet de faire des copies de tous les éléments de req.body
@@ -88,6 +88,7 @@ exports.deleteSauce = (req, res, next) => {
        const fileToDestroy = sauce.imageUrl.split('/images/')[1]
        // on défait le lien path avec le fichier image et on supprime le file
        fs.unlink(`images/${fileToDestroy}`, () => {
+        fileToDestroy.deleteOne
         // On supprime la sauce concernée
            Sauce.deleteOne({ _id: req.params.id })
             // status 200 OK et l'élément en json

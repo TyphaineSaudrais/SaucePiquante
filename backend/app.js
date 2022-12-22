@@ -5,6 +5,19 @@ const helmet = require('helmet')
 //Moogoose pour interargir avec la base de données de MongoDB
 const mongoose = require('mongoose');
 
+//express rate limit to reduce the possibility of massive request --> for security purposes
+const rateLimit = require('express-rate-limit'); 
+
+const limiter = rateLimit({
+  windowMs : 15 * 60 * 1000, //15 min
+  max: 100, // Limit each ip address to 100 requests 
+  message : "to many requests try again later",
+})
+
+app.use(limiter); 
+
+
+
 // dotenv config pour variable d'environnement confidentialité
 const dotenv = require('dotenv');
 dotenv.config();
